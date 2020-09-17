@@ -96,9 +96,15 @@ function validateAuthorizationHeader(header, res) {
 
 function validateAccessTokenRequest(req, res) {
   let success = true, msg;
-  if (req.body.grant_type !== "authorization_code" && req.body.grant_type !== "refresh_token") {
+  if (req.body.grant_type !== "authorization_code"
+      && req.body.grant_type !== "refresh_token"
+      && req.body.grant_type !== "client_credentials") {
     success = false;
-    msg = errorMsg("grant_type", "authorization_code or refresh_token", req.body.grant_type);
+    msg = errorMsg(
+        "grant_type",
+        "authorization_code, refresh_token or client_credentials",
+        req.body.grant_type
+    );
   }
   if (req.body.grant_type === "refresh_token") {
     let personData = refresh2personData[req.body.refresh_token];
@@ -120,6 +126,7 @@ function validateAccessTokenRequest(req, res) {
   // }
   if (!validateClientId(req.body.client_id, res)) {
     success = false;
+    return success;
   }
   if (req.body.client_secret !== EXPECTED_CLIENT_SECRET) {
     success = false;
@@ -156,7 +163,7 @@ function createToken(name, email, expires_in, refresh_token_expires_in, client_s
   const refreshtoken = "REFT-" + randomstring.generate(6);
   const id_token = "IDT-" + randomstring.generate(6);
   const date_of_creation = Date.now()/1000 | 0;
-  
+
   const token = {
     access_token: accesstoken,
     expires_in: expires_in,
@@ -182,6 +189,17 @@ function createToken(name, email, expires_in, refresh_token_expires_in, client_s
     date_of_creation: date_of_creation
   };
   return code;
+}
+
+function createAppToken() {
+  const accesstoken = "ACCT-" + randomstring.generate(6);
+  const expires_in = 4785034
+
+  return {
+    access_token: accesstoken,
+    expires_in: expires_in,
+    token_type: "Bearer"
+  };
 }
 
 app.use(session({
@@ -223,6 +241,9 @@ app.get("/login-as", (req, res) => {
 
 app.post(ACCESS_TOKEN_REQUEST_PATH, (req, res) => {
   if (validateAccessTokenRequest(req, res)) {
+    if (req.body.grant_type === 'client_credentials') {
+      return res.send(createAppToken());
+    }
     let code = null;
     if (req.body.grant_type === "refresh_token") {
       const refresh = req.body.refresh_token;

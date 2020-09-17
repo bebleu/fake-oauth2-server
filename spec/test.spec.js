@@ -171,4 +171,24 @@ describe("validateAccessTokenRequest", () => {
     accessTokenReq.session = request.session;
     expect(sut.validateAccessTokenRequest(accessTokenReq, resp())).toBe(false);
   });
+
+  it("accepts grant type client_credentials", () => {
+    const base64EncodedAuthCode = base64Encode(sut.EXPECTED_CLIENT_ID + ":" + sut.EXPECTED_CLIENT_SECRET);
+    const request = accessTokenRequest({
+      client_id: sut.EXPECTED_CLIENT_ID,
+      client_secret: sut.EXPECTED_CLIENT_SECRET,
+      grant_type: "client_credentials"
+    });
+    expect(sut.validateAccessTokenRequest(request, httpMocks.createResponse())).toBe(true);
+  });
+
+  it("is false for invalid grant type", () => {
+    const base64EncodedAuthCode = base64Encode(sut.EXPECTED_CLIENT_ID + ":" + sut.EXPECTED_CLIENT_SECRET);
+    const request = accessTokenRequest({
+      client_id: sut.EXPECTED_CLIENT_ID,
+      client_secret: sut.EXPECTED_CLIENT_SECRET,
+      grant_type: "invalid"
+    });
+    expect(sut.validateAccessTokenRequest(request, httpMocks.createResponse())).toBe(false);
+  });
 });
