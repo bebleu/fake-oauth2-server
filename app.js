@@ -21,6 +21,7 @@ const ACCESS_TOKEN_REQUEST_PATH = process.env.ACCESS_TOKEN_REQUEST_PATH || "/oau
 const USERINFO_REQUEST_URL = process.env.TOKENINFO_REQUEST_URL || "/oauth2/v3/userinfo";
 const TOKENINFO_REQUEST_URL = process.env.TOKENINFO_REQUEST_URL || "/oauth2/v3/tokeninfo";
 const PERMITTED_REDIRECT_URLS = process.env.PERMITTED_REDIRECT_URLS ? process.env.PERMITTED_REDIRECT_URLS.split(",") : ["http://localhost:8181/auth/login"];
+const APP_ACCESS_TOKEN_EXPIRY = process.env.APP_ACCESS_TOKEN_EXPIRY || 4785034;
 
 const code2token = {};
 const refresh2personData = {};
@@ -193,11 +194,10 @@ function createToken(name, email, expires_in, refresh_token_expires_in, client_s
 
 function createAppToken() {
   const accesstoken = "ACCT-" + randomstring.generate(6);
-  const expires_in = 4785034
 
   return {
     access_token: accesstoken,
-    expires_in: expires_in,
+    expires_in: APP_ACCESS_TOKEN_EXPIRY,
     token_type: "Bearer"
   };
 }
